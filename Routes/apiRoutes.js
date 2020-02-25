@@ -1,38 +1,64 @@
-const router = require("express").Router();
-const database = require("../data/notedata");
+"use strict";
+
+var fs = require("fs");
+const util = require("util");
+const uuidv1 = require("uuid/v1");
+// const index = require("../public/index");
+// const database = require("../data/db.json");
+
+const readFileAsync = util.promisify(fs.readFile);
+const writeFileAsync = util.promisify(fs.writeFile);
+let newNote = {};
+let parsedNotes = {
+  counter: 0,
+  notes: []
+};
 
 module.exports = function(app) {
-  // API GET Requests
-  // Below code handles when users "visit" a page.
-  // In each of the below cases when a user visits a link
-  // (ex: localhost:PORT/api/admin... they are shown a JSON of the data in the table)
-  // ---------------------------------------------------------------------------
 
-  
   app.get("/api/notes", function(req, res) {
-    res.json(notedata);
+    readFileAsync("../data/db.json", "utf8")
+    .then(notes => {
+      try {
+        parsedNotes.notes = [].concat(JSON.parse(notes));
+      } catch (err) {
+        parsedNotes.notes = [];
+      }  
+    })
+    res.json(parsedNotes);
   });
-  
-  // API POST Requests
-  // Below code handles when a user submits a form and thus submits data to the server.
-  // In each of the below cases, when a user submits form data (a JSON object)
-  // ...the JSON is pushed to the appropriate JavaScript array
-  // (ex. User fills out a reservation request... this data is then sent to the server...
-  // Then the server saves the data to the tableData array)
-  // ---------------------------------------------------------------------------
-  
+
   app.post("/api/notes", (req, res) => {
-    const newNote = req.body;
-    newNote.routeName = newNote.name.replace(/\s+/g, "").toLowerCase();
-    console.log(newNote);
-    notes.push(newNote);
-    res.json(newNote);
+    parsedNotes.counter ++;
+    newNote = {
+       noteTitle:req.body.title,
+       noteText: req.body.text,
+       id: parsedNotes.counter
+     };
+  
+    parsedNotes.notes.push(newNote);
+
+    writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
+    .then(() => {
+      return res.json(parsedNotes);
+    })
+    .catch( err => console.log(err)); 
   });
 
-  app.post("/api/clear", function(req, res) {
-    // Empty out the arrays of data
-    savedNotes.length = 0;
+  app.delete("/api/notes/:id", (req, res) => {
 
-    res.json({ ok: true });
+    let completed = parseInt( req.params.id);
+
+    for (let i=0; i< parsedNotes.notes.length; i++) {
+
+      if (completed === parsedNotes.notes[i].id) {
+        parsedNotes.notes.splice(i,1);
+        writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
+    .then(() => {
+      return res.json(parsedNotes);
+    })
+    .catch( err => console.log(err)); 
+      }
+    }
   });
 };

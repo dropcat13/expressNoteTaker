@@ -6,14 +6,15 @@ var $noteList = $(".list-container .list-group");
 
 var activeNote = {};
 // A function for getting all notes from the db
-var getNotes = function() {
+var getNotes = () => {
   return $.ajax({
     url: "/api/notes",
     method: "GET"
   });
 };
+
 // A function for saving a note to the db
-var saveNote = function(note) {
+var saveNote = note => {
   return $.ajax({
     url: "/api/notes",
     data: note,
@@ -22,7 +23,7 @@ var saveNote = function(note) {
 };
 
 // A function for deleting a note from the db
-var deleteNote = function(id) {
+var deleteNote = id => {
   return $.ajax({
     url: "api/notes/" + id,
     method: "DELETE"
