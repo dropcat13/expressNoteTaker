@@ -3,8 +3,6 @@
 var fs = require("fs");
 const util = require("util");
 const uuidv1 = require("uuid/v1");
-// const index = require("../public/index");
-// const database = require("../data/db.json");
 
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
@@ -17,7 +15,7 @@ let parsedNotes = {
 module.exports = function(app) {
 
   app.get("/api/notes", function(req, res) {
-    readFileAsync("../data/db.json", "utf8")
+    readFileAsync("/data/db.json", "utf8")
     .then(notes => {
       try {
         parsedNotes.notes = [].concat(JSON.parse(notes));
@@ -40,9 +38,9 @@ module.exports = function(app) {
 
     writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
     .then(() => {
-      return res.json(parsedNotes);
-    })
-    .catch( err => console.log(err)); 
+      if (err) throw err;
+      res.json(parsedNotes);
+    });
   });
 
   app.delete("/api/notes/:id", (req, res) => {
@@ -54,11 +52,11 @@ module.exports = function(app) {
       if (completed === parsedNotes.notes[i].id) {
         parsedNotes.notes.splice(i,1);
         writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
-    .then(() => {
-      return res.json(parsedNotes);
-    })
-    .catch( err => console.log(err)); 
+      .then(() => {
+        if (err) throw err;
+        res.json(parsedNotes);
+      });
       }
     }
   });
-};
+}
