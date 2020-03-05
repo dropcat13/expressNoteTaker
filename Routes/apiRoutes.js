@@ -15,15 +15,19 @@ let parsedNotes = {
 module.exports = function(app) {
 
   app.get("/api/notes", function(req, res) {
-    readFileAsync("/data/db.json", "utf8")
+    readFileAsync(__dirname + "/data/db.json", "utf8")
     .then(notes => {
+      
       try {
         parsedNotes.notes = [].concat(JSON.parse(notes));
       } catch (err) {
+        console.log('Error');
+        
         parsedNotes.notes = [];
       }  
+      console.log("parsedNotes: ",parsedNotes);
+      res.json(parsedNotes);
     })
-    res.json(parsedNotes);
   });
 
   app.post("/api/notes", (req, res) => {
@@ -37,8 +41,8 @@ module.exports = function(app) {
     parsedNotes.notes.push(newNote);
 
     writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
-    .then(() => {
-      if (err) throw err;
+    .catch((err) => {
+      if (err) return console.log(err);
       res.json(parsedNotes);
     });
   });
@@ -53,7 +57,7 @@ module.exports = function(app) {
         parsedNotes.notes.splice(i,1);
         writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
       .then(() => {
-        if (err) throw err;
+        if (err) return console.log(err);
         res.json(parsedNotes);
       });
       }
