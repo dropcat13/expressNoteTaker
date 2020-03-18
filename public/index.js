@@ -1,8 +1,9 @@
 var $noteTitle = $(".note-title");
-var $noteText = $(".note-textarea");
 var $saveNoteBtn = $(".save-note");
 var $newNoteBtn = $(".new-note");
+var $noteText = $(".note-textarea");
 var $noteList = $(".list-container .list-group");
+var glNotes;
 
 var activeNote = {};
 // A function for getting all notes from the db
@@ -104,6 +105,7 @@ var handleRenderSaveBtn = function() {
 
 // Render's the list of note titles
 var renderNoteList = function(notes) {
+  glNotes=notes
   $noteList.empty();
 
   var noteListItems = [];
@@ -112,7 +114,7 @@ var renderNoteList = function(notes) {
     var note = notes[i];
 
     var $li = $("<li class='list-group-item'>").data(note);
-    var $span = $("<span>").text(note.title);
+    var $span = $("<span>").text(note.noteTitle);
     var $delBtn = $(
       "<i class='fas fa-trash-alt float-right text-danger delete-note'>"
     );

@@ -7,43 +7,41 @@ const uuidv1 = require("uuid/v1");
 const readFileAsync = util.promisify(fs.readFile);
 const writeFileAsync = util.promisify(fs.writeFile);
 let newNote = {};
-let parsedNotes = {
-  counter: 0,
-  notes: []
-};
+let db = require("./data/db.json");
 
 module.exports = function(app) {
 
   app.get("/api/notes", function(req, res) {
-    readFileAsync(__dirname + "/data/db.json", "utf8")
-    .then(notes => {
+    // readFileAsync(__dirname + "/data/db.json", "utf8")
+    // .then(notes => {
+      console.log('Notes: ', db.notes);
       
-      try {
-        parsedNotes.notes = [].concat(JSON.parse(notes));
-      } catch (err) {
-        console.log('Error');
+      // try {
+      //   parsedNotes.notes = [].concat(JSON.parse(notes));
+      // } catch (err) {
+      //   console.log('Error');
         
-        parsedNotes.notes = [];
-      }  
-      console.log("parsedNotes: ",parsedNotes);
-      res.json(parsedNotes);
+      //   parsedNotes.notes = [];
+      // }  
+      // console.log("parsedNotes: ",parsedNotes);
+      // res.json(parsedNotes);
+      res.json(db.notes);
     })
-  });
 
   app.post("/api/notes", (req, res) => {
-    parsedNotes.counter ++;
+    db.counter ++;
     newNote = {
-       noteTitle:req.body.title,
+       noteTitle: req.body.title,
        noteText: req.body.text,
-       id: parsedNotes.counter
+       id: db.counter
      };
   
-    parsedNotes.notes.push(newNote);
+    db.notes.push(newNote);
 
-    writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
+    writeFileAsync(__dirname + "/data/db.json", JSON.stringify(db), "utf8")
+    .then (() => res.json(db))
     .catch((err) => {
       if (err) return console.log(err);
-      res.json(parsedNotes);
     });
   });
 
@@ -51,16 +49,22 @@ module.exports = function(app) {
 
     let completed = parseInt( req.params.id);
 
-    for (let i=0; i< parsedNotes.notes.length; i++) {
+    console.log(db.notes)
 
-      if (completed === parsedNotes.notes[i].id) {
-        parsedNotes.notes.splice(i,1);
-        writeFileAsync(__dirname + "/data/db.json", JSON.stringify(parsedNotes), "utf8")
+    // for (let i=0; i< db.notes.length; i++) {
+
+      // if (completed === db.notes[i].id) {
+        let filteredNotes = db.notes.filter(note => note.id !== completed)
+        // console.log("got here", db.notes.splice(i, 1))
+        // db.notes=db.notes.splice(i, 1);
+        console.log(filteredNotes)
+        db.notes = filteredNotes;
+        writeFileAsync(__dirname + "/data/db.json", JSON.stringify(db), "utf8")
       .then(() => {
+        res.json(db)
+      })
+      .catch((err) => {
         if (err) return console.log(err);
-        res.json(parsedNotes);
       });
-      }
-    }
-  });
+    });
 }
