@@ -12,7 +12,7 @@ let db = require("./data/db.json");
 module.exports = function(app) {
 
   app.get("/api/notes", (req, res) => {
-    return res.json(notes);
+    return res.json(db.notes);
   });
 
   app.get("/api/notes", function(req, res) {
