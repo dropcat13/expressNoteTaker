@@ -11,6 +11,10 @@ let db = require("./data/db.json");
 
 module.exports = function(app) {
 
+  app.get("/api/notes", (req, res) => {
+    return res.json(notes);
+  });
+
   app.get("/api/notes", function(req, res) {
     // readFileAsync(__dirname + "/data/db.json", "utf8")
     // .then(notes => {
